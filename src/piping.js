@@ -7,6 +7,7 @@ const EventEmitter = require("events");
 const cluster = require("cluster");
 const defaultOptions = {
   hook: false,
+  firstChar: '.',
   includeModules: false,
   main: process.argv[1],
   args: process.argv.slice(2),
@@ -191,7 +192,7 @@ export default function piping(options, ready) {
       const file = module._resolveFilename(name, parent, isMain);
 
       // Ignore module files unless includeModules is set
-      if (name[0] === "." || (options.includeModules && file.indexOf("node_modules") > 0)) {
+      if (name[0] === options.firstChar || (options.includeModules && file.indexOf("node_modules") > 0)) {
         worker.send({file}); // Tell supervisor about the file
       }
 
