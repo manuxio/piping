@@ -8,6 +8,7 @@ const cluster = require("cluster");
 const defaultOptions = {
   hook: false,
   firstChar: '.',
+  filenameStarts: [],
   includeModules: false,
   main: process.argv[1],
   args: process.argv.slice(2),
@@ -192,7 +193,23 @@ export default function piping(options, ready) {
       const file = module._resolveFilename(name, parent, isMain);
 
       // Ignore module files unless includeModules is set
-      if (name[0] === options.firstChar || (options.includeModules && file.indexOf("node_modules") > 0)) {
+      if (
+        ( // Include if name starts with a defined string
+          options.filenameStarts &&
+          options.filenameStarts.length > 0 &&
+          options.filenameStarts.reduce((prev, current) => {
+            if (prev) return prev;
+            if (name.indexOf(current) > -1) {
+              return true;
+            }
+            return false;
+          }, false)
+        ) ||
+        name[0] === options.firstChar || // include if name starts with a defined char
+        ( // include if modules are requested
+          options.includeModules && file.indexOf("node_modules") > 0
+        )
+      ) {
         worker.send({file}); // Tell supervisor about the file
       }
 
